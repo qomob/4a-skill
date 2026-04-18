@@ -1,400 +1,215 @@
-# 4A-skill
+# 4A-Skill
 
-13个专业Agent协作完成广告Campaign全流程及效果监测。
+4A广告 Campaign 全流程智能体工作流 —— **12 个专业 Agent** 协作完成从调度路由到提案交付及效果监测的完整广告 Campaign。
 
-## 功能描述
-
-本Skill通过13个专业Agent的协作,完成从客户需求到提案交付再到效果监测的完整广告Campaign全生命周期,包括:
-
-**核心流程Agent**:
-- 调度路由(Traffic Agent)
-- 市场调研(Research Agent)
-- 需求澄清(AE Agent) - 新增8个行业Brief模板 + 支持文档解析
-- 策略推导(Planner Agent)
-- 创意发想(Creative Agent)
-- AIGC素材生成(AIGC Expert Agent)
-- 内容生产(Content Agent)
-- 生成式引擎优化(GEO Expert Agent)
-- 媒体投放(Media Agent)
-- 执行统筹(Producer Agent) - 新增供应商报价参考
-- 提案交付(Proposal Agent)
-
-**新增Agent**:
-- 合规审查(Compliance Agent) - 广告法/平台规则/知识产权审查
-- 效果监测(Monitoring Agent) - Campaign上线后数据追踪和优化
-
-**文档解析能力**:
-- Word文档(.docx) - 品牌Brief、市场调研报告
-- PDF文档(.pdf) - 行业报告、数据分析
-- PPT文档(.pptx) - 创意方案、竞品案例
-- Markdown文档(.md) - 项目说明、技术文档
-- 图片文档(.jpg/.png) - 创意参考、品牌VI
-
-## 用户体验优化(v2.1)
-
-### 🎯 新手友好
-- **4种使用模式**: 快速开始/标准/自定义/静默,满足不同需求
-- **3步快速上手**: 简化流程,3-5分钟了解AI能力
-- **700行术语词典**: 10个营销模型+36个专业术语,每个都有简单解释
-- **FAQ章节**: 10个常见问题,帮助快速解决疑惑
-
-### ⚡ 效率提升
-- **静默模式**: 仅5个关键节点确认,大幅减少等待时间(15分钟→10分钟)
-- **自动继续**: 批量确认剩余所有Agent
-- **快速微调**: 智能识别修改内容,只重新执行相关Agent
-- **进度预估**: 显示"预计还需X分钟"
-
-### 💾 导出功能
-- **5种导出格式**: Markdown/HTML/Word/PDF/PPT
-- **PPT大纲生成**: 详细的页面结构和演讲备注
-- **图表数据输出**: 预算饼图/KPI柱状图/时间线/转化漏斗
-- **4种导出方式**: 生成文件/复制粘贴/PPT大纲/图表数据
-
-### 🎨 个性化
-- **品牌档案**: 自动保存品牌信息,后续自动引用
-- **历史记录**: 自动保存所有方案,随时查看对比
-- **方案对比**: 一键对比不同方案差异
-- **方案复用**: 基于历史方案创建新方案
-
-## 使用场景
-
-当用户需要以下内容时使用本Skill:
-- Campaign方案
-- 广告策划
-- 营销策略
-- 合规审查
-- 效果监测和优化
-
-## 目录结构
+## 工作流架构
 
 ```
-4A-skill/
-├── SKILL.md                 # Skill入口文档(814行,含完整使用指南)
-└── references/
-    ├── agents/              # Agent定义文件(13个)
-    │   ├── traffic-agent.md
-    │   ├── research-agent.md
-    │   ├── ae-agent.md            # 新增8个行业Brief模板 + 文档解析
-    │   ├── planner-agent.md
-    │   ├── creative-agent.md
-    │   ├── aigc-agent.md
-    │   ├── content-agent.md
-    │   ├── geo-agent.md
-    │   ├── media-agent.md
-    │   ├── producer-agent.md      # 新增供应商报价参考
-    │   ├── proposal-agent.md      # 新增导出功能说明
-    │   ├── compliance-agent.md    # 新增合规审查Agent
-    │   └── monitoring-agent.md    # 新增效果监测Agent
-    ├── workflows/           # DAG工作流配置
-    │   └── campaign.yaml
-    ├── shared/schemas/      # JSON Schema数据契约(13个)
-    │   ├── traffic.schema.json
-    │   ├── research.schema.json
-    │   ├── brief.schema.json
-    │   ├── strategy.schema.json
-    │   ├── creative.schema.json
-    │   ├── aigc.schema.json
-    │   ├── content.schema.json
-    │   ├── geo.schema.json
-    │   ├── media.schema.json
-    │   ├── production.schema.json
-    │   ├── proposal.schema.json
-    │   ├── compliance.schema.json
-    │   └── campaign_output.schema.json
-    ├── glossary.md          # 术语词典(700行,36个专业术语)
-    └── document-handling.md # 文档处理指南(新增)
-└── scripts/
-    └── document-parser.py   # 文档解析脚本(新增)
+Traffic → Research → AE → Planner → Creative → AIGC → Content → GEO → Media → Producer → Proposal
+                                                                              ↓
+                                                                    Monitoring（并行）
+Compliance（并行审查）
 ```
+
+**核心链路**: 10 个串行 Agent + 2 个并行 Agent（合规审查 + 效果监测）
+
+| 阶段 | Agent | 职责 |
+|------|-------|------|
+| 🔀 调度 | **Traffic Agent** | 意图识别、模式选择、路由调度 |
+| 🔍 调研 | **Research Agent** | 联网搜索市场趋势、竞品分析、用户洞察 |
+| 📋 需求 | **AE Agent** | 结构化 Brief，追问澄清 |
+| 🧠 策略 | **Planner Agent** | Strategy Engine + 4A方法论引擎(BAV/FCB/HumanKind) |
+| 🎨 创意 | **Creative Agent** | 四大创意流派(BigIdea/Disruption/ThinkSmall/Humankind) |
+| 🤖 素材 | **AIGC Expert** | MJ/SD/DALL-E/即梦 图像Prompt + Runway/Kling 视频分镜 |
+| ✍️ 内容 | **Content Agent** | Slogan + 视频脚本 + 多平台社媒内容 |
+| 🔥 优化 | **GEO Expert** | AI可引用结构 + 语义增强 + 平台SEO适配 |
+| 📢 投放 | **Media Agent** | 渠道组合 + 预算分配 + KPI设定 + A/B测试 |
+| 🎬 统筹 | **Producer Agent** | 排期 + 资源盘点 + 风险管理 |
+| 📄 提案 | **Proposal Agent** | 8章节专业方案（MD/HTML/PPT/Word/PDF）|
+| ⚖️ 合规 | **Compliance Agent** | 法律/平台合规审查（并行）|
+| 📊 监测 | **Monitoring Agent** | 五阶段监测闭环(P0-P3告警)（并行）|
+
+## 使用模式
+
+| 模式 | 触发词 | Agent数 | Checkpoint | 适用场景 |
+|------|--------|---------|-----------|---------|
+| **快速** | 快速/简单/新手/1 | 6个 | 4处暂停 | 首次使用、时间紧、只要方向 |
+| **标准** | 完整/详细/2或默认 | 11个 | 每步暂停 | 正式项目、完整方案 |
+| **自定义** | 只要.../指定Agent名 | 按需 | 仅指定+依赖暂停 | 特定环节迭代 |
+| **预览** | 预览/快速看看 | 6个 | Proposal处暂停 | 快速看大致方向 |
+
+**断点续跑**: 「从 {Agent名} 继续」— 复用已有输出，从指定点继续执行
+**品牌档案**: 首次建立后自动引用，减少重复追问
+
+## 项目结构
+
+```
+4ASkill/
+├── SKILL.md                          # Skill 主入口（315行）
+├── CHANGELOG.md                      # 版本变更记录
+├── workflows/
+│   └── campaign.yaml                 # DAG 工作流定义
+├── agents/                           # 14 个文件（13个Agent + index.md）
+│   ├── traffic-agent.md              #   调度路由
+│   ├── research-agent.md             #   市场调研
+│   ├── ae-agent.md                  #   客户总监
+│   ├── planner-agent.md             #   策略引擎 + 方法论诊断
+│   ├── creative-agent.md            #   创意总监 + 四大流派
+│   ├── aigc-agent.md                #   AIGC制作专家（MJ/SD/即梦/Runway/Kling）
+│   ├── content-agent.md             #   内容制作人
+│   ├── geo-agent.md                 #   引擎优化专家
+│   ├── media-agent.md               #   媒体策划
+│   ├── producer-agent.md            #   执行统筹
+│   ├── proposal-agent.md            #   提案总监
+│   ├── compliance-agent.md          #   合规审查
+│   ├── monitoring-agent.md          #   效果监测
+│   └── index.md                     #   Agent 导航索引
+├── scripts/                          # 辅助脚本
+│   ├── budget_allocator.py           #   预算分配器（6渠道CPM/CPC + 3阶段）
+│   └── kpi_simulator.py             #   KPI模拟器（8行业基准 × S-D级创意质量）
+└── shared/
+    ├── schemas/                      # 14 个 JSON Schema 数据契约
+    │   └── (traffic/brief/strategy/creative/aigc/content/
+    │       geo/media/production/proposal/research/compliance/campaign_output)
+    └── references/                   # 37 个参考文档（渐进式加载）
+        ├── rules.md                  #   通用规则集
+        ├── output-templates*.md      #   输出模板库（1总 + 4拆分）
+        ├── glossary*.md              #   术语词典 + 小白模式 + 可视化系统
+        ├── methodology.md            #   方法论框架（OST/3C/AIDA等9类）
+        ├── 4a-methodology-bible.md   #   4A方法论引擎（BAV/FCB/HumanKind/四大流派）
+        ├── bible-strategic-methods.md # 战略方法圣经（含诊断输出JSON）
+        ├── bible-creative-methods.md # 创意方法圣经（含360°品牌管家操作清单）
+        ├── bible-media-methods.md   #   媒体方法圣经
+        ├── kpi-benchmarks.md         #   KPI基准数据（8行业×4等级）
+        ├── mermaid-templates.md      #   Mermaid图表模板（13类可视化）
+        ├── industry-brief-templates.md # 行业Brief模板（12个行业预填值）
+        ├── case-studies*.md          #   案例库（成功5 + 失败3）
+        ├── creative-review.md        #   创意五维评审 + A/B Test框架
+        ├── creative-toolkit.md       #   创意工具箱
+        ├── creative-schools.md       #   创意四大流派详解
+        ├── feedback-loop*.md         #   监测反馈闭环（P0-P3告警）
+        ├── collaboration.md          #   多人协作(@批注/版本管理)
+        ├── execution-resources.md    #   执行资源(AIGC工具/媒体平台/外包)
+        ├── b2b-marketing-module.md   #   B2B营销模块(ABM/DMU)
+        ├── brand-upgrade-mode.md     #   品牌升级模式(CBBE/JND)
+        ├── multilingual-guide.md     #   多语言支持指南（7种语言）
+        ├── jimeng-prompt-guide.md    #   即梦提示词规范
+        ├── jimeng-guide-image.md     #   即梦图像指南
+        ├── jimeng-guide-video.md     #   即梦视频指南
+        ├── aigc-prompt-templates.md  #   AIGC Prompt模板库
+        ├── aigc-tool-guide.md        #   AIGC工具指南
+        ├── compliance-detailed-rules.md # 合规详细规则
+        ├── monitoring-detailed-guide.md # 监测详细指南
+        ├── planner-model-library.md  #   Planner模型库
+        └── producer-vendor-price-guide.md # 外包供应商价格参考
+```
+
+## 核心能力
+
+### Planner — Strategy Engine + 4A方法论引擎
+
+1. **Model Library**: 10 个营销传播模型（AIDA / STP / 4P / 5A / JTBD / Hook / GoldenCircle / PAS / 3H / GrowthLoop）
+2. **4A方法论诊断**: BAV品牌资产矩阵 / FCB网格 / HumanKind人性洞察 / Meaningfulness Gap
+3. **Strategy Scoring**: 5维度量化评分（目标匹配/受众匹配/可执行性/创新性/转化潜力）
+4. **创意流派推荐**: 基于诊断结果自动推荐 BigIdea / Disruption / ThinkSmall / Humankind
+
+### Creative — 四大经典创意流派
+
+| 流派 | 来源 | 核心理念 | 适用场景 |
+|------|------|---------|---------|
+| **BigIdea** | Ogilvy | 一个大创意贯穿所有触点 | 品牌建设/长期战役 |
+| **Disruption** | TBWA | 打破品类常规 | 新品牌进入/颠覆者 |
+| **ThinkSmall** | DDB | 小洞察大创意 | 社交传播/病毒内容 |
+| **Humankind** | Leo Burnett | 人性洞察→社会价值 | 品牌升级/公益营销 |
+
+### AIGC Expert — 全平台可执行 Prompt
+
+每个素材输出 **4-6 套工具格式**的完整可复制 Prompt：
+
+| 工具 | 图像 | 视频 | 特点 |
+|------|------|------|------|
+| **Midjourney v6** | `--ar --style --stylize --v` 完整参数 | — | 艺术感最强 |
+| **Stable Diffusion** | Positive/Negative + Sampler/Steps/CFG | — | 可控性最强 |
+| **DALL-E 3** | 自然语言格式 | — | 文字渲染准 |
+| **即梦 Jimeng** | 中文原生 Prompt | Seedance 视频中文 | 抖音生态适配 |
+| **Runway Gen-3** | — | Text-to-Video + Image-to-Video | 电影质感 |
+| **Kling AI 可灵** | — | 文生视频 + 图生视频（最长2min）| 中国市场首选 |
+
+### Media — 渠道策略与预算分配
+
+- 6 大渠道默认配置（信息流/搜索/社媒KOL/户外/短视频/电商）
+- 3 阶段投放节奏（蓄水15% / 爆发55% / 长尾30%）
+- A/B 测试框架 + 动态预算调优规则
+- 媒体平台一键映射（巨量引擎 / 腾讯广告 / 抖音聚光）
+
+### 扩展模块（渐进式加载）
+
+| 模块 | 触发词 | 能力 |
+|------|--------|------|
+| **📚 术语与小白模式** | `术语词典` `小白模式` `图表` | 100+术语词典 / 大白话输出 / 13类Mermaid图表 / 8行业KPI基准 |
+| **📖 案例库** | `案例` `成功案例` | 5个成功案例(快消/SaaS/美妆/B2B/本地生活) + 3个翻车案例 |
+| **🎨 创意评审** | `创意评审` `A/B Test` | 五维自评卡 / 四角人工评审 / A/B Test框架 |
+| **📊 监测反馈闭环** | `监测报告` `效果怎么样` | 五阶段监测协议 / P0-P3异常告警 / 数据回传学习 |
+| **👥 多人协作** | `协作模式` `邀请同事` | 角色权限矩阵 / @批注语法 / 版本管理(v{主}.{次}-阶段) |
+| **🏭 行业模板** | `我是{行业}` `{行业}行业模板` | 12个行业Brief模板(含本地生活/餐饮/母婴/游戏) |
+| **🔧 执行资源** | `执行` `怎么做素材` | AIGC工具(MJ/SD/即梦/Runway/Kling) / 媒体平台(巨量/聚光/腾讯) |
+| **📐 4A方法论引擎** | `方法论` `诊断` | BAV/FCB/HumanKind诊断 + 四大创意流派推荐 |
+
+### Scripts — 辅助计算工具
+
+```bash
+# 预算分配：50万预算，4渠道 + 3阶段
+python3 scripts/budget_allocator.py '{"total_budget":500000,"channels":["info_stream","search","social_kol","short_video"],"phases":["warmup","burst","tail"]}'
+
+# KPI模拟：美妆行业，50万预算，30天，A级创意质量
+python3 scripts/kpi_simulator.py '{"industry":"beauty","budget":500000,"duration_days":30,"creative_quality":"A"}'
+```
+
+## 数据契约与质量保障
+
+- **14 个 JSON Schema** 定义 Agent 间数据传递格式，校验失败触发自修复
+- **三级上下文传递**: Required(必传) / Optional(按需) / Discardable(可裁剪)
+- **双输出机制**: Markdown 摘要供用户确认 + JSON 供下游 Agent 引用
+- **Checkpoint 系统**: 交互/自动/静默三种模式 + 5个关键必停节点 + 8条快捷命令
+- **降级策略**: complete → limited → minimal 三级降级路径
 
 ## 使用示例
 
-### 快速开始模式(新手推荐)
 ```
-快速帮我做一个茶饮品牌的Campaign,预算50万,目标是Z世代
-```
-
-### 文档上传模式
-```
-这是我们的品牌Brief: [上传brand-brief.docx]
-参考这个行业报告: [上传industry-report.pdf]
-这是竞品案例PPT: [上传competitor-case.pptx]
-参考这个创意风格: [上传creative-reference.jpg]
-这是项目说明文档: [上传project-notes.md]
+"客户X要推一款新茶饮，预算50万，目标人群Z世代，跑完整Campaign流程。"
+"我们接到SaaS产品的品牌升级项目，需要Brief到执行排期全套方案。"
+"帮我为一个汽车品牌的年度大促活动生成Campaign全案。"
+"帮我快速看看这个美妆新品的大致方案。"                    ← 预览模式
+"从Creative开始继续，前面Brief和Strategy已经确认了。"       ← 断点续跑
+"只要创意方向和AIGC素材，不需要投放策略。"                   ← 自定义编排
+"帮我跑一个Campaign，品牌是XX茶饮，记住这些信息。"           ← 品牌档案
 ```
 
-### 标准模式(完整方案)
-```
-客户X要推一款新茶饮,预算50万,目标人群是Z世代,帮我跑一个完整Campaign流程。
-```
+## 集成方式
 
-### 静默模式(高效执行)
-```
-帮我跑一个Campaign,静默模式自动继续
-```
+### Trae IDE
 
-### 品牌升级项目
-```
-我们接到一个SaaS产品的品牌升级项目,需要从Brief到执行排期全套方案。
-```
-
-### 年度大促活动
-```
-帮我为一个汽车品牌的年度大促活动生成Campaign全案。
-```
-
-### 快速预览模式
-```
-帮我快速看看这个美妆新品的大致方案。
-```
-
-### 断点续跑
-```
-客户要求从Creative开始继续,前面Brief和Strategy已经确认了。
-```
-
-### 快速微调
-```
-把预算从50万改为30万
-换个创意方向
-修改Slogan
-```
-
-### 自定义编排
-```
-只要策略推导和创意方向,其他都不需要。
-```
-
-### 导出方案
-```
-导出方案为Word
-生成PPT大纲
-生成图表数据
-```
-
-### 术语查询
-```
-解释一下什么是AIDA模型
-什么是KOL?简单解释一下
-```
-
-### 效果监测
-```
-Campaign上线后帮我监测数据表现,提供优化建议。
-```
-
-## 核心特性
-
-### 1. 策略引擎(Planner Agent)
-- 内置10个营销传播模型(AIDA/STP/4P/5A/JTBD/Hook/GoldenCircle/PAS/3H/GrowthLoop)
-- 自动匹配2-3个候选模型
-- 多模型竞争对比
-- 5维度量化评分(目标匹配/受众匹配/可执行性/创新性/转化潜力)
-- Layer 2.5: Context & Constraint(行业上下文+商业约束)
-
-### 2. 创意方法论(Creative Agent)
-- 奥美360品牌管家
-- 电通AISAS
-- 李奥贝纳Humankind
-- Mermaid可视化图表(用户旅程图/品牌资产金字塔/内容营销矩阵)
-- 数据驱动评估
-
-### 3. AIGC素材生成(AIGC Expert Agent)
-- 图像Prompt生成(Midjourney/SD/即梦/DALL-E)
-- 视频Prompt生成(Runway/Pika/Sora/Seedance)
-- 多平台素材规格(小红书/抖音/Meta)
-- 预留API集成接口
-
-### 4. 生成式引擎优化(GEO Expert Agent)
-- AI可引用结构重写
-- 语义意图层补充
-- 平台适配优化
-- AI引用就绪度评估
-
-### 5. 合规审查(Compliance Agent) ⚖️
-- 广告法合规检查(禁止性/限制性/推荐性规定)
-- 平台审核规则(抖音/小红书/微信/B站)
-- 知识产权风险(版权/商标/专利)
-- 风险等级判定(高风险阻断/中风险标注/低风险建议)
-
-### 6. 效果监测(Monitoring Agent) 📊
-- 数据监测(曝光/互动/转化/内容四大维度)
-- 平台看板(抖音/小红书/微信生态)
-- A/B测试追踪
-- 效果分析报告
-- 异常预警(CTR/CVR/成本异常)
-
-### 7. 行业Brief模板(AE Agent) 🏭
-- 8个行业模板: 快消/美妆/科技/汽车/金融/电商/社媒/B2B
-- 预设KPI指标
-- 预算基准范围
-- 渠道偏好配置
-- 智能行业匹配
-
-### 8. 供应商报价参考(Producer Agent) 💰
-- 城市分级: 一线城市/新一线城市/二线城市
-- TVC制作报价: 20-600万
-- KV设计报价: 2-40万
-- KOL合作报价: 0.2-50万
-- 社媒运营月费: 1.5-25万
-- 活动执行报价: 5-200万
-
-### 9. 上下文管理(R.E.S.T模型)
-- 三级上下文控制(Required/Optional/Discardable)
-- 上下文压缩协议(L1保留/L2摘要/L3丢弃)
-- 决策记录(decision_log)
-- DAG数据流方向控制
-
-### 10. 灵活执行模式
-- 快速开始模式(3步快速上手)
-- 标准模式(完整13步流程)
-- 静默模式(仅关键节点确认)
-- 自定义模式(指定Agent子集)
-- 断点续跑(从任意Agent继续)
-- 快速微调(智能识别修改)
-- 品牌档案(自动保存品牌信息)
-- 历史记录(保存/查看/对比/复用)
-
-### 11. 导出功能 💾
-- 5种导出格式(Markdown/HTML/Word/PDF/PPT)
-- PPT大纲详细结构(页面/要点/图表/备注)
-- 图表数据输出(饼图/柱状图/时间线/漏斗)
-- 4种导出方式(生成/复制/大纲/数据)
-
-### 12. 术语词典 📚
-- 700行术语词典
-- 10个营销策略模型详细解释
-- 36个专业术语(广告/平台/数据/渠道)
-- 每个术语:简单解释+详细说明+适用场景+示例
-
-### 13. 文档解析能力 📄
-- 支持5种文档格式(Word/PPT/PDF/Markdown/图片)
-- 自动提取关键信息(文本/标题/表格/结构)
-- 减少重复输入,提升效率
-- 详细文档处理指南
-
-## 执行流程
+Skill 位于项目目录，Trae IDE 自动发现加载。直接描述广告需求即可触发：
 
 ```
-Traffic (调度路由) 🔀
-  → Research (市场调研) 🔍
-    → AE (需求澄清 + 行业模板) 🏭
-      → Planner (策略推导) 🧠
-        → Creative (创意发想) 🎨
-          → AIGC Expert (素材生成指令) 🔥
-            → Content (内容生产) 📝
-              → GEO Expert (生成式引擎优化) 🔥
-                → Media (投放策略) 📊
-                  → Producer (执行统筹 + 报价参考) 💰
-                    → Proposal (提案交付 + 导出功能) 📑
-                      → Compliance (合规审查) ⚖️
-                        → Monitoring (效果监测) 📈
+"帮我跑一个新茶饮品牌的完整Campaign流程"
 ```
 
-## 交付标准
+### 独立 Agent 系统
 
-每个Agent输出必须:
-1. 符合对应JSON Schema的结构要求
-2. 中文内容,专业术语可保留英文
-3. 所有假设必须显式标注【假设】
-4. Producer最终输出汇总为完整Campaign Plan
-5. Compliance Agent确保无高风险合规问题
-6. Monitoring Agent提供数据监测和优化建议
-7. Proposal Agent支持多种格式导出
+- **单 Agent**: 直接读取 `agents/{name}-agent.md` 作为 System Prompt
+- **多 Agent 编排**: 参照 `workflows/campaign.yaml` 的 DAG 定义
+- **数据校验**: 使用 `shared/schemas/*.schema.json` 对 Agent 间 JSON 做 Schema 校验
+- **辅助计算**: 使用 `scripts/*.py` 进行预算分配和KPI模拟
 
-## Checkpoint机制
+### 自定义扩展
 
-每个Agent完成后暂停,输出Markdown摘要供用户确认,确认后继续执行。
-
-**标准模式**: 13个Checkpoint,每个Agent都确认
-**静默模式**: 5个关键节点,大幅减少确认次数
-**快速开始**: 6个关键步骤,快速了解大致方向
-
-## 用户体验评分
-
-| 维度 | 评分 | 说明 |
-|------|------|------|
-| 易用性 | 9.5/10 | 4种使用模式,新手引导完整 |
-| 效率 | 9.0/10 | 静默模式+自动继续+快速微调 |
-| 学习成本 | 9.0/10 | 700行术语词典+FAQ |
-| 满意度 | 9.5/10 | 导出功能+个性化+历史记录 |
-| 可用性 | 9.0/10 | 13个Agent+完整流程+多格式 |
-| **总体评分** | **9.2/10** | **从8.2提升到9.2** |
-
-## 版本更新
-
-### v2.1 (2026-04-16) - 用户体验优化
-- ✅ 新增4种使用模式(快速开始/标准/自定义/静默)
-- ✅ 新增快速开始指南(3步快速上手)
-- ✅ 新增新手引导章节
-- ✅ 优化Checkpoint机制(静默模式/自动继续/进度预估)
-- ✅ 新增导出功能(5种格式/4种方式)
-- ✅ 新增快速微调模式(智能识别修改)
-- ✅ 优化品牌档案和历史记录
-- ✅ 新增700行术语词典(36个专业术语)
-- ✅ 新增FAQ章节(10个常见问题)
-- ✅ 新增进阶使用技巧章节
-- ✅ SKILL.md: 307行 → 814行 (+165%)
-- ✅ 打包大小: 86K → 100K
-- ✅ 用户体验评分: 8.2/10 → 9.2/10
-
-### v2.0 (2026-04-10) - Agent扩展
-- ✅ 新增Compliance Agent(合规审查)
-- ✅ 新增Monitoring Agent(效果监测)
-- ✅ AE Agent增加8个行业Brief模板
-- ✅ Producer Agent增加供应商报价参考
-- ✅ 优化Mermaid图表样式
-- ✅ 更新Agent协作链至13个Agent
-- ✅ 打包大小: 73K → 86K
-
-### v1.0 (2026-03-28) - 初始版本
-- ✅ 初始版本,包含11个核心Agent
-- ✅ 完整的Campaign全流程
-- ✅ R.E.S.T上下文管理模型
-- ✅ Checkpoint机制
-
-## 专业评估
-
-### 行业评分
-- **专业理论深度**: 10/10 ⭐⭐⭐⭐⭐
-- **流程完整性**: 9.5/10 ⭐⭐⭐⭐⭐
-- **实际可执行性**: 9.5/10 ⭐⭐⭐⭐⭐
-- **创新性**: 8.5/10 ⭐⭐⭐⭐
-- **行业适配性**: 9.5/10 ⭐⭐⭐⭐⭐
-
-**总体评分: 9.5/10** ⭐⭐⭐⭐⭐
-
-### 核心优势
-1. ✅ 完整的合规审查体系(Compliance Agent)
-2. ✅ 全生命周期效果监测(Monitoring Agent)
-3. ✅ 8个行业精准Brief模板
-4. ✅ 7类供应商报价参考
-5. ✅ 13个专业Agent协作
-6. ✅ 完整覆盖Campaign全流程
-7. ✅ 符合4A广告公司工作标准
-8. ✅ 4种使用模式,新手友好
-9. ✅ 静默模式,高效执行
-10. ✅ 5种导出格式,满足各种需求
-11. ✅ 700行术语词典,降低学习成本
-12. ✅ 快速微调,智能修改
-
-### 适用场景
-- ✅ 初创品牌: 预算有限,需要快速产出专业Campaign
-- ✅ 中小型Agency: 提升团队能力,标准化输出
-- ✅ 营销部门: 内部培训工具,帮助新人理解4A流程
-- ✅ 竞品分析: 快速生成竞品Campaign框架
-- ✅ 效果监测: Campaign上线后数据追踪和优化
-- ✅ 新手学习: 3步快速上手,700行术语词典
-
-### 不适用场景
-- ⚠️ 超大型品牌Campaign: 需要定制化服务和深度洞察
-- ⚠️ 危机公关: 需要实时判断和人性化的决策
-- ⚠️ 创意驱动型项目: AI创意难以达到人类顶尖创意的原创性
+- **新增 Agent**: 在 `agents/` 下新建 `{name}-agent.md`，更新 `campaign.yaml` 的 DAG
+- **新增平台**: 修改 `aigc-agent.md` / `execution-resources.md` 中的规格表
+- **新增行业**: 在 `industry-brief-templates.md` 追加模板 + `kpi-benchmarks.md` 追加基准
+- **新增语言**: 在 `multilingual-guide.md` 追加语言配置
+- **新增脚本**: 在 `scripts/` 下新建 Python 脚本
 
 ## License
 
-Copyright 2026 Qomob.AI
-
----
-
-本文档结构由Qomob.AI打造的4A广告公司技能协作生成
+Apache License 2.0
